@@ -1,7 +1,31 @@
 package main
 
-import "fmt"
+import (
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/debangshu919/transcodex/internal/config"
+	"github.com/debangshu919/transcodex/internal/handlers"
+)
 
 func main() {
-	fmt.Println("Hello World!")
+	cfg := config.MustLoad()
+
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("GET /healthz", handlers.Health)
+
+	srv := http.Server{
+		Addr:         ":" + cfg.Port,
+		Handler:      mux,
+		ReadTimeout:  time.Second * 10,
+		WriteTimeout: time.Second * 30,
+		IdleTimeout:  time.Second * 60,
+	}
+
+	log.Println("Starting server in http://localhost" + srv.Addr)
+	if err := srv.ListenAndServe(); err != nil {
+		log.Fatalf("Server failed: %v", err)
+	}
 }
