@@ -6,21 +6,17 @@ import (
 	"time"
 
 	"github.com/debangshu919/transcodex/internal/config"
-	"github.com/debangshu919/transcodex/internal/handlers"
+	router "github.com/debangshu919/transcodex/internal/http"
 )
 
 func main() {
 	cfg := config.MustLoad()
 
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("GET /healthz", handlers.Health)
-	mux.HandleFunc("GET /formats", handlers.ListFormats)
-	mux.HandleFunc("GET /formats/{format}", handlers.GetFormat)
+	handler := router.HttpHandler()
 
 	srv := http.Server{
 		Addr:         ":" + cfg.Port,
-		Handler:      mux,
+		Handler:      handler,
 		ReadTimeout:  time.Second * 10,
 		WriteTimeout: time.Second * 30,
 		IdleTimeout:  time.Second * 60,
