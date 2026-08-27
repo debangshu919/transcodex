@@ -15,6 +15,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /healthz", handlers.Health)
+	mux.HandleFunc("GET /formats", handlers.ListFormats)
 
 	srv := http.Server{
 		Addr:         ":" + cfg.Port,
