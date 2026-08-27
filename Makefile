@@ -13,8 +13,18 @@ run: build
 clean:
 	@rm -rf $(BIN_DIR)/
 
+STEPS ?=
+
 migrate-up:
+ifeq ($(STEPS),)
 	@go run cmd/migrate/main.go up
+else
+	@go run cmd/migrate/main.go up $(STEPS)
+endif
 
 migrate-down:
+ifeq ($(STEPS),)
 	@go run cmd/migrate/main.go down
+else
+	@go run cmd/migrate/main.go down $(STEPS)
+endif
