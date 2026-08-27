@@ -6,11 +6,20 @@ import (
 	"time"
 
 	"github.com/debangshu919/transcodex/internal/config"
+	"github.com/debangshu919/transcodex/internal/db"
 	router "github.com/debangshu919/transcodex/internal/http"
 )
 
 func main() {
 	cfg := config.MustLoad()
+	log.Println("Starting server in", cfg.Env, "mode")
+
+	database, err := db.Connect(cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer database.Close()
+	log.Println("Connected to database")
 
 	handler := router.HttpHandler()
 
@@ -22,7 +31,7 @@ func main() {
 		IdleTimeout:  time.Second * 60,
 	}
 
-	log.Println("Starting server in http://localhost" + srv.Addr)
+	log.Println("Server running at http://localhost" + srv.Addr)
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
