@@ -62,3 +62,16 @@ func ListFormats(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
 }
+
+func GetFormat(w http.ResponseWriter, r *http.Request) {
+	formatName := r.PathValue("format")
+	for _, format := range formats {
+		if format.Name == formatName {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(format)
+			return
+		}
+	}
+	w.WriteHeader(http.StatusNotFound)
+}
