@@ -1,0 +1,13 @@
+DROP TABLE IF EXISTS credit_transactions;
+
+DROP TABLE IF EXISTS jobs;
+
+DROP TABLE IF EXISTS conversions;
+
+DROP TABLE IF EXISTS api_keys;
+
+DROP TABLE IF EXISTS credit_accounts;
+
+DROP TABLE IF EXISTS files;
+
+DROP TABLE IF EXISTS users;
