@@ -10,6 +10,7 @@ type Config struct {
 	Port        string
 	Env         string
 	DatabaseURL string
+	LogLevel    string
 }
 
 func MustLoad() Config {
@@ -30,9 +31,15 @@ func MustLoad() Config {
 		panic("DATABASE_URL is required!")
 	}
 
+	logLevel := os.Getenv("LOG_LEVEL")
+	if logLevel == "" {
+		logLevel = "info"
+	}
+
 	return Config{
 		Port:        port,
 		Env:         env,
 		DatabaseURL: databaseURL,
+		LogLevel:    logLevel,
 	}
 }

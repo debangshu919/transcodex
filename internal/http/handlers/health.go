@@ -1,9 +1,15 @@
 package handlers
 
-import "net/http"
+import (
+	"log/slog"
+	"net/http"
+)
 
-func Health(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-	w.Write([]byte(`{"status": "ok"}`))
+func Health(logger *slog.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("Health check")
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(200)
+		w.Write([]byte(`{"status": "ok"}`))
+	}
 }

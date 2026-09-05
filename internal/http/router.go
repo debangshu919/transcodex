@@ -1,16 +1,18 @@
 package router
 
 import (
+	"database/sql"
+	"log/slog"
 	"net/http"
 
 	"github.com/debangshu919/transcodex/internal/http/handlers"
 )
 
-func HttpHandler() *http.ServeMux {
+func HttpHandler(db *sql.DB, logger *slog.Logger) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Health check
-	mux.HandleFunc("GET /healthz", handlers.Health)
+	mux.HandleFunc("GET /healthz", handlers.Health(logger))
 
 	// Formats
 	mux.HandleFunc("GET /formats", handlers.ListFormats)

@@ -8,10 +8,13 @@ import (
 	"github.com/debangshu919/transcodex/internal/config"
 	"github.com/debangshu919/transcodex/internal/db"
 	router "github.com/debangshu919/transcodex/internal/http"
+	logger "github.com/debangshu919/transcodex/internal/utils"
 )
 
 func main() {
 	cfg := config.MustLoad()
+	logger := logger.NewLogger(cfg, "logs")
+
 	log.Println("Starting server in", cfg.Env, "mode")
 
 	database, err := db.Connect(cfg.DatabaseURL)
@@ -21,7 +24,7 @@ func main() {
 	defer database.Close()
 	log.Println("Connected to database")
 
-	handler := router.HttpHandler()
+	handler := router.HttpHandler(database, logger)
 
 	srv := http.Server{
 		Addr:         ":" + cfg.Port,
