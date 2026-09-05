@@ -15,11 +15,11 @@ func main() {
 	cfg := config.MustLoad()
 	logger := logger.NewLogger(cfg, "logs")
 
-	log.Println("Starting server in", cfg.Env, "mode")
+	log.Println("Starting server in", "env", cfg.Env, "mode")
 
 	database, err := db.Connect(cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		logger.Error("Failed to connect to database: %v", err)
 	}
 	defer database.Close()
 	log.Println("Connected to database")
