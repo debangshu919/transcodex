@@ -27,5 +27,11 @@ func HttpHandler() *http.ServeMux {
 	mux.HandleFunc("GET /files/{id}", handlers.NotImplemented)
 	mux.HandleFunc("DELETE /files/{id}", handlers.NotImplemented)
 
+	// Conversions
+	mux.HandleFunc("POST /conversions", handlers.NotImplemented)
+	mux.HandleFunc("GET /conversions", handlers.NotImplemented)
+	mux.HandleFunc("GET /conversions/{id}", handlers.NotImplemented)
+	mux.HandleFunc("DELETE /conversions/{id}", handlers.NotImplemented)
+
 	return mux
 }
