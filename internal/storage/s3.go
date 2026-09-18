@@ -132,3 +132,46 @@ func (s *S3Storage) Delete(
 
 	return nil
 }
+
+func (s *S3Storage) ListFiles(
+	ctx context.Context,
+	bucket string,
+) ([]File, error) {
+	var files []File
+
+	paginator := s3.NewListObjectsV2Paginator(
+		s.client,
+		&s3.ListObjectsV2Input{
+			Bucket: aws.String(bucket),
+		},
+	)
+
+	for paginator.HasMorePages() {
+		result, err := paginator.NextPage(ctx)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"list files in bucket %q: %w",
+				bucket,
+				err,
+			)
+		}
+
+		for _, obj := range result.Contents {
+			file := File{
+				Key: *obj.Key,
+			}
+
+			if obj.Size != nil {
+				file.Size = *obj.Size
+			}
+
+			if obj.LastModified != nil {
+				file.LastModified = obj.LastModified.String()
+			}
+
+			files = append(files, file)
+		}
+	}
+
+	return files, nil
+}
