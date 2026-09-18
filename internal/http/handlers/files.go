@@ -72,13 +72,42 @@ func (h *FileHandler) UploadFile(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func ListFiles() {
-	// List all files
+func (h *FileHandler) ListFiles(w http.ResponseWriter, r *http.Request) {
+	// TODO: Resolve the bucket name from the request
+	bucket := "meow"
 
+	files, err := h.storage.ListFiles(r.Context(), bucket)
+	if err != nil {
+		h.logger.Error("failed to list files", "error", err)
+		http.Error(w, "failed to list files", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	json.NewEncoder(w).Encode(files)
 }
 
-func DeleteFile() {
-	// Delete the file
+func (h *FileHandler) DeleteFile(w http.ResponseWriter, r *http.Request) {
+	// TODO: Resolve the bucket name from the request
+	bucket := "meow"
+
+	key := r.PathValue("id")
+	if key == "" {
+		h.logger.Error("id is required")
+		http.Error(w, "id is required", http.StatusBadRequest)
+		return
+	}
+
+	key = "uploads/" + key
+	if err := h.storage.Delete(r.Context(), bucket, key); err != nil {
+		h.logger.Error("failed to delete file", "error", err)
+		http.Error(w, "failed to delete file", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func GetFile() {
