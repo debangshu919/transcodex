@@ -28,7 +28,7 @@ func HttpHandler(db *sql.DB, storage *storage.S3Storage, logger *slog.Logger) *h
 	fh := handlers.NewFileHandler(storage, db, logger)
 	mux.HandleFunc("POST /files/upload", fh.UploadFile)
 	mux.HandleFunc("GET /files", fh.ListFiles)
-	mux.HandleFunc("GET /files/{id}", handlers.NotImplemented)
+	mux.HandleFunc("GET /files/{id}", fh.GetFile)
 	mux.HandleFunc("DELETE /files/{id}", fh.DeleteFile)
 
 	// Conversions

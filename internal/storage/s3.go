@@ -175,3 +175,29 @@ func (s *S3Storage) ListFiles(
 
 	return files, nil
 }
+
+func (s *S3Storage) GenerateDownloadLink(
+	ctx context.Context,
+	bucket string,
+	key string,
+) (string, error) {
+	presigner := s3.NewPresignClient(s.client)
+
+	req, err := presigner.PresignGetObject(
+		ctx,
+		&s3.GetObjectInput{
+			Bucket: aws.String(bucket),
+			Key:    aws.String(key),
+		},
+	)
+	if err != nil {
+		return "", fmt.Errorf(
+			"generate download link for object %q from bucket %q: %w",
+			key,
+			bucket,
+			err,
+		)
+	}
+
+	return req.URL, nil
+}

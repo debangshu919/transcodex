@@ -17,4 +17,5 @@ type Storage interface {
 	Download(ctx context.Context, bucket, key string) (io.ReadCloser, error)
 	Delete(ctx context.Context, bucket, key string) error
 	ListFiles(ctx context.Context, bucket string) ([]File, error)
+	GenerateDownloadLink(ctx context.Context, bucket, key string) (string, error)
 }

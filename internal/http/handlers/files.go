@@ -110,7 +110,25 @@ func (h *FileHandler) DeleteFile(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func GetFile() {
-	// Generate a download link
-	// Redirect to the download link
+func (h *FileHandler) GetFile(w http.ResponseWriter, r *http.Request) {
+	// TODO: Resolve the bucket name from the request
+	bucket := "meow"
+
+	key := r.PathValue("id")
+	if key == "" {
+		h.logger.Error("id is required")
+		http.Error(w, "id is required", http.StatusBadRequest)
+		return
+	}
+
+	key = "uploads/" + key
+
+	url, err := h.storage.GenerateDownloadLink(r.Context(), bucket, key)
+	if err != nil {
+		h.logger.Error("failed to generate download link", "error", err)
+		http.Error(w, "failed to generate download link", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
