@@ -14,6 +14,7 @@ type Config struct {
 	AWSRegion   string
 	AWSKey      string
 	AWSSecret   string
+	S3Bucket    string
 }
 
 func MustLoad() Config {
@@ -54,6 +55,11 @@ func MustLoad() Config {
 		panic("AWS Key is required in production!")
 	}
 
+	s3Bucket := os.Getenv("S3_BUCKET")
+	if s3Bucket == "" {
+		panic("S3 Bucket is required!")
+	}
+
 	if env == "development" {
 		awsKey = "test"
 		awsSecret = "test"
@@ -68,5 +74,6 @@ func MustLoad() Config {
 		AWSRegion:   awsRegion,
 		AWSKey:      awsKey,
 		AWSSecret:   awsSecret,
+		S3Bucket:    s3Bucket,
 	}
 }

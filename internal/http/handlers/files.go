@@ -27,9 +27,6 @@ func NewFileHandler(storage *storage.S3Storage, db *sql.DB, logger *slog.Logger)
 }
 
 func (h *FileHandler) UploadFile(w http.ResponseWriter, r *http.Request) {
-	// TODO: Resolve the bucket name from the request
-	bucket := "meow"
-
 	// Upload the file
 	file, header, err := r.FormFile("file")
 	if err != nil {
@@ -46,7 +43,6 @@ func (h *FileHandler) UploadFile(w http.ResponseWriter, r *http.Request) {
 	// Stream the file directly to S3.
 	if err := h.storage.Upload(
 		r.Context(),
-		bucket,
 		key,
 		file,
 	); err != nil {
@@ -73,10 +69,7 @@ func (h *FileHandler) UploadFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FileHandler) ListFiles(w http.ResponseWriter, r *http.Request) {
-	// TODO: Resolve the bucket name from the request
-	bucket := "meow"
-
-	files, err := h.storage.ListFiles(r.Context(), bucket)
+	files, err := h.storage.ListFiles(r.Context())
 	if err != nil {
 		h.logger.Error("failed to list files", "error", err)
 		http.Error(w, "failed to list files", http.StatusInternalServerError)
@@ -90,9 +83,6 @@ func (h *FileHandler) ListFiles(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FileHandler) DeleteFile(w http.ResponseWriter, r *http.Request) {
-	// TODO: Resolve the bucket name from the request
-	bucket := "meow"
-
 	key := r.PathValue("id")
 	if key == "" {
 		h.logger.Error("id is required")
@@ -101,7 +91,7 @@ func (h *FileHandler) DeleteFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	key = "uploads/" + key
-	if err := h.storage.Delete(r.Context(), bucket, key); err != nil {
+	if err := h.storage.Delete(r.Context(), key); err != nil {
 		h.logger.Error("failed to delete file", "error", err)
 		http.Error(w, "failed to delete file", http.StatusInternalServerError)
 		return
@@ -111,9 +101,6 @@ func (h *FileHandler) DeleteFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FileHandler) GetFile(w http.ResponseWriter, r *http.Request) {
-	// TODO: Resolve the bucket name from the request
-	bucket := "meow"
-
 	key := r.PathValue("id")
 	if key == "" {
 		h.logger.Error("id is required")
@@ -123,7 +110,7 @@ func (h *FileHandler) GetFile(w http.ResponseWriter, r *http.Request) {
 
 	key = "uploads/" + key
 
-	url, err := h.storage.GenerateDownloadLink(r.Context(), bucket, key)
+	url, err := h.storage.GenerateDownloadLink(r.Context(), key)
 	if err != nil {
 		h.logger.Error("failed to generate download link", "error", err)
 		http.Error(w, "failed to generate download link", http.StatusInternalServerError)

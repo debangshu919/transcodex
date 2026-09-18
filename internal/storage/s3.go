@@ -14,6 +14,7 @@ import (
 
 type S3Storage struct {
 	client *s3.Client
+	bucket string
 }
 
 func NewS3Storage(cfg config.Config) *S3Storage {
@@ -40,6 +41,7 @@ func NewS3Storage(cfg config.Config) *S3Storage {
 
 	return &S3Storage{
 		client: client,
+		bucket: cfg.S3Bucket,
 	}
 }
 
@@ -67,12 +69,11 @@ func (s *S3Storage) ListBuckets(
 
 func (s *S3Storage) Upload(
 	ctx context.Context,
-	bucket string,
 	key string,
 	body io.Reader,
 ) error {
 	_, err := s.client.PutObject(ctx, &s3.PutObjectInput{
-		Bucket: aws.String(bucket),
+		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),
 		Body:   body,
 	})
@@ -81,7 +82,7 @@ func (s *S3Storage) Upload(
 		return fmt.Errorf(
 			"upload object %q to bucket %q: %w",
 			key,
-			bucket,
+			s.bucket,
 			err,
 		)
 	}
@@ -91,11 +92,10 @@ func (s *S3Storage) Upload(
 
 func (s *S3Storage) Download(
 	ctx context.Context,
-	bucket string,
 	key string,
 ) (io.ReadCloser, error) {
 	result, err := s.client.GetObject(ctx, &s3.GetObjectInput{
-		Bucket: aws.String(bucket),
+		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),
 	})
 
@@ -103,7 +103,7 @@ func (s *S3Storage) Download(
 		return nil, fmt.Errorf(
 			"download object %q from bucket %q: %w",
 			key,
-			bucket,
+			s.bucket,
 			err,
 		)
 	}
@@ -113,11 +113,10 @@ func (s *S3Storage) Download(
 
 func (s *S3Storage) Delete(
 	ctx context.Context,
-	bucket string,
 	key string,
 ) error {
 	_, err := s.client.DeleteObject(ctx, &s3.DeleteObjectInput{
-		Bucket: aws.String(bucket),
+		Bucket: aws.String(s.bucket),
 		Key:    aws.String(key),
 	})
 
@@ -125,7 +124,7 @@ func (s *S3Storage) Delete(
 		return fmt.Errorf(
 			"delete object %q from bucket %q: %w",
 			key,
-			bucket,
+			s.bucket,
 			err,
 		)
 	}
@@ -135,14 +134,13 @@ func (s *S3Storage) Delete(
 
 func (s *S3Storage) ListFiles(
 	ctx context.Context,
-	bucket string,
 ) ([]File, error) {
 	var files []File
 
 	paginator := s3.NewListObjectsV2Paginator(
 		s.client,
 		&s3.ListObjectsV2Input{
-			Bucket: aws.String(bucket),
+			Bucket: aws.String(s.bucket),
 		},
 	)
 
@@ -151,7 +149,7 @@ func (s *S3Storage) ListFiles(
 		if err != nil {
 			return nil, fmt.Errorf(
 				"list files in bucket %q: %w",
-				bucket,
+				s.bucket,
 				err,
 			)
 		}
@@ -178,7 +176,6 @@ func (s *S3Storage) ListFiles(
 
 func (s *S3Storage) GenerateDownloadLink(
 	ctx context.Context,
-	bucket string,
 	key string,
 ) (string, error) {
 	presigner := s3.NewPresignClient(s.client)
@@ -186,7 +183,7 @@ func (s *S3Storage) GenerateDownloadLink(
 	req, err := presigner.PresignGetObject(
 		ctx,
 		&s3.GetObjectInput{
-			Bucket: aws.String(bucket),
+			Bucket: aws.String(s.bucket),
 			Key:    aws.String(key),
 		},
 	)
@@ -194,7 +191,7 @@ func (s *S3Storage) GenerateDownloadLink(
 		return "", fmt.Errorf(
 			"generate download link for object %q from bucket %q: %w",
 			key,
-			bucket,
+			s.bucket,
 			err,
 		)
 	}
