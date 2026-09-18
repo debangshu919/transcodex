@@ -1,0 +1,134 @@
+package storage
+
+import (
+	"context"
+	"fmt"
+	"io"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+
+	"github.com/debangshu919/transcodex/internal/config"
+)
+
+type S3Storage struct {
+	client *s3.Client
+}
+
+func NewS3Storage(cfg config.Config) *S3Storage {
+	awsCfg := aws.Config{
+		Region: cfg.AWSRegion,
+		Credentials: credentials.NewStaticCredentialsProvider(
+			cfg.AWSKey,
+			cfg.AWSSecret,
+			"",
+		),
+	}
+
+	var client *s3.Client
+
+	if cfg.Env == "development" {
+		client = s3.NewFromConfig(awsCfg, func(o *s3.Options) {
+			o.BaseEndpoint = aws.String(
+				"http://localhost.floci.io:4566",
+			)
+		})
+	} else {
+		client = s3.NewFromConfig(awsCfg)
+	}
+
+	return &S3Storage{
+		client: client,
+	}
+}
+
+func (s *S3Storage) ListBuckets(
+	ctx context.Context,
+) ([]string, error) {
+
+	result, err := s.client.ListBuckets(
+		ctx,
+		&s3.ListBucketsInput{},
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("list buckets: %w", err)
+	}
+
+	buckets := make([]string, 0, len(result.Buckets))
+
+	for _, bucket := range result.Buckets {
+		buckets = append(buckets, *bucket.Name)
+	}
+
+	return buckets, nil
+}
+
+func (s *S3Storage) Upload(
+	ctx context.Context,
+	bucket string,
+	key string,
+	body io.Reader,
+) error {
+	_, err := s.client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+		Body:   body,
+	})
+
+	if err != nil {
+		return fmt.Errorf(
+			"upload object %q to bucket %q: %w",
+			key,
+			bucket,
+			err,
+		)
+	}
+
+	return nil
+}
+
+func (s *S3Storage) Download(
+	ctx context.Context,
+	bucket string,
+	key string,
+) (io.ReadCloser, error) {
+	result, err := s.client.GetObject(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf(
+			"download object %q from bucket %q: %w",
+			key,
+			bucket,
+			err,
+		)
+	}
+
+	return result.Body, nil
+}
+
+func (s *S3Storage) Delete(
+	ctx context.Context,
+	bucket string,
+	key string,
+) error {
+	_, err := s.client.DeleteObject(ctx, &s3.DeleteObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+	})
+
+	if err != nil {
+		return fmt.Errorf(
+			"delete object %q from bucket %q: %w",
+			key,
+			bucket,
+			err,
+		)
+	}
+
+	return nil
+}
