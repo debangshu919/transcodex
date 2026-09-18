@@ -8,6 +8,7 @@ import (
 	"github.com/debangshu919/transcodex/internal/config"
 	"github.com/debangshu919/transcodex/internal/db"
 	router "github.com/debangshu919/transcodex/internal/http"
+	"github.com/debangshu919/transcodex/internal/storage"
 	logger "github.com/debangshu919/transcodex/internal/utils"
 )
 
@@ -24,7 +25,10 @@ func main() {
 	defer database.Close()
 	log.Println("Connected to database")
 
-	handler := router.HttpHandler(database, logger)
+	store := storage.NewS3Storage(cfg)
+	log.Println("S3 storage initialized")
+
+	handler := router.HttpHandler(database, store, logger)
 
 	srv := http.Server{
 		Addr:         ":" + cfg.Port,
