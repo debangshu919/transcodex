@@ -42,15 +42,9 @@ func main() {
 		MinVersion: tls.VersionTLS12,
 	}
 
-	hdlr := mw.Cors(
-		mw.SecurityHeaders(
-			mw.Compression(handler),
-		),
-	)
-
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
-		Handler:      hdlr,
+		Handler:      applyMiddleware(handler, mw.Compression, mw.SecurityHeaders, mw.Cors),
 		ReadTimeout:  time.Second * 10,
 		WriteTimeout: time.Second * 30,
 		IdleTimeout:  time.Second * 60,
@@ -64,4 +58,13 @@ func main() {
 	if err := srv.ListenAndServeTLS(cert, key); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
+}
+
+type Middleware func(http.Handler) http.Handler
+
+func applyMiddleware(handler http.Handler, middlewares ...Middleware) http.Handler {
+	for _, mw := range middlewares {
+		handler = mw(handler)
+	}
+	return handler
 }
