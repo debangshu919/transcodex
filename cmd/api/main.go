@@ -1,15 +1,18 @@
 package main
 
 import (
+	"crypto/tls"
 	"log"
 	"net/http"
 	"time"
 
+	mw "github.com/debangshu919/transcodex/internal/api/middlewares"
 	"github.com/debangshu919/transcodex/internal/config"
 	"github.com/debangshu919/transcodex/internal/db"
 	router "github.com/debangshu919/transcodex/internal/http"
 	"github.com/debangshu919/transcodex/internal/storage"
 	logger "github.com/debangshu919/transcodex/internal/utils"
+	"golang.org/x/net/http2"
 )
 
 func main() {
@@ -30,16 +33,35 @@ func main() {
 
 	handler := router.HttpHandler(database, store, logger)
 
-	srv := http.Server{
+	// Load certificate
+	cert := "cert.pem"
+	key := "key.pem"
+
+	// Configure TLS
+	tlsConfig := &tls.Config{
+		MinVersion: tls.VersionTLS12,
+	}
+
+	hdlr := mw.Cors(
+		mw.SecurityHeaders(
+			mw.Compression(handler),
+		),
+	)
+
+	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
-		Handler:      handler,
+		Handler:      hdlr,
 		ReadTimeout:  time.Second * 10,
 		WriteTimeout: time.Second * 30,
 		IdleTimeout:  time.Second * 60,
+		TLSConfig:    tlsConfig,
 	}
 
-	log.Println("Server running at http://localhost" + srv.Addr)
-	if err := srv.ListenAndServe(); err != nil {
+	// Enable HTTP2
+	http2.ConfigureServer(srv, &http2.Server{})
+
+	log.Println("Server running at https://localhost" + srv.Addr)
+	if err := srv.ListenAndServeTLS(cert, key); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }
