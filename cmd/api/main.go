@@ -42,9 +42,11 @@ func main() {
 		MinVersion: tls.VersionTLS12,
 	}
 
+	rl := mw.NewRateLimiter(5, time.Minute)
+
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
-		Handler:      applyMiddleware(handler, mw.Compression, mw.SecurityHeaders, mw.Cors),
+		Handler:      applyMiddleware(handler, mw.Compression, mw.SecurityHeaders, rl.Middleware, mw.Cors),
 		ReadTimeout:  time.Second * 10,
 		WriteTimeout: time.Second * 30,
 		IdleTimeout:  time.Second * 60,
