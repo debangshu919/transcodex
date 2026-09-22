@@ -44,9 +44,17 @@ func main() {
 
 	rl := mw.NewRateLimiter(5, time.Minute)
 
+	hppOptions := mw.HPPOptions{
+		CheckQuery:                  true,
+		CheckBody:                   true,
+		CheckBodyOnlyForContentType: "application/x-www-form-urlencoded",
+		Whitelist:                   []string{"allowedParam"},
+	}
+	hpp := mw.Hpp(hppOptions)
+
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
-		Handler:      applyMiddleware(handler, mw.Compression, mw.SecurityHeaders, rl.Middleware, mw.Cors),
+		Handler:      applyMiddleware(handler, hpp, mw.Compression, mw.SecurityHeaders, rl.Middleware, mw.Cors),
 		ReadTimeout:  time.Second * 10,
 		WriteTimeout: time.Second * 30,
 		IdleTimeout:  time.Second * 60,
