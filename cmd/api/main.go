@@ -7,11 +7,12 @@ import (
 	"time"
 
 	mw "github.com/debangshu919/transcodex/internal/api/middlewares"
+	router "github.com/debangshu919/transcodex/internal/api/router"
 	"github.com/debangshu919/transcodex/internal/config"
 	"github.com/debangshu919/transcodex/internal/db"
-	router "github.com/debangshu919/transcodex/internal/http"
 	"github.com/debangshu919/transcodex/internal/storage"
-	logger "github.com/debangshu919/transcodex/internal/utils"
+	"github.com/debangshu919/transcodex/pkg/logger"
+	"github.com/debangshu919/transcodex/pkg/utils"
 	"golang.org/x/net/http2"
 )
 
@@ -54,7 +55,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:         ":" + cfg.Port,
-		Handler:      applyMiddleware(handler, hpp, mw.Compression, mw.SecurityHeaders, rl.Middleware, mw.Cors),
+		Handler:      utils.ApplyMiddleware(handler, hpp, mw.Compression, mw.SecurityHeaders, rl.Middleware, mw.Cors),
 		ReadTimeout:  time.Second * 10,
 		WriteTimeout: time.Second * 30,
 		IdleTimeout:  time.Second * 60,
@@ -68,13 +69,4 @@ func main() {
 	if err := srv.ListenAndServeTLS(cert, key); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
-}
-
-type Middleware func(http.Handler) http.Handler
-
-func applyMiddleware(handler http.Handler, middlewares ...Middleware) http.Handler {
-	for _, mw := range middlewares {
-		handler = mw(handler)
-	}
-	return handler
 }
