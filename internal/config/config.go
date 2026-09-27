@@ -19,11 +19,12 @@ type Config struct {
 }
 
 func MustLoad(environment string) Config {
-	if environment == "production" || environment == "prod" {
+	switch environment {
+	case "production", "prod":
 		godotenv.Load(".env")
-	} else if environment == "development" || environment == "dev" {
+	case "development", "dev":
 		godotenv.Load(".env.development")
-	} else {
+	default:
 		log.Fatalf("Unknown environment: %s", environment)
 	}
 
