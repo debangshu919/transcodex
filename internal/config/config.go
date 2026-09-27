@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -18,10 +19,12 @@ type Config struct {
 }
 
 func MustLoad(environment string) Config {
-	if environment == "production" {
+	if environment == "production" || environment == "prod" {
 		godotenv.Load(".env")
-	} else {
+	} else if environment == "development" || environment == "dev" {
 		godotenv.Load(".env.development")
+	} else {
+		log.Fatalf("Unknown environment: %s", environment)
 	}
 
 	port := os.Getenv("PORT")

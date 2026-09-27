@@ -21,12 +21,9 @@ func main() {
 	var env string
 
 	if len(os.Args) < 2 {
-		log.Fatal("Environment not specified! Defaulting to development")
-		env = "development"
-	} else if os.Args[1] != "production" {
-		env = "development"
+		log.Fatal("Environment not specified")
 	} else {
-		env = "production"
+		env = os.Args[1]
 	}
 
 	cfg := config.MustLoad(env)
