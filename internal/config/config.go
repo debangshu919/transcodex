@@ -17,8 +17,12 @@ type Config struct {
 	S3Bucket    string
 }
 
-func MustLoad() Config {
-	godotenv.Load()
+func MustLoad(environment string) Config {
+	if environment == "production" {
+		godotenv.Load(".env")
+	} else {
+		godotenv.Load(".env.development")
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {

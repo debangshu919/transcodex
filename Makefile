@@ -8,7 +8,10 @@ build:
 	@go build -o $(API_BIN) $(API_SRC)
 
 run: build
-	@./$(API_BIN)
+	@./$(API_BIN) production
+
+dev: build
+	@./$(API_BIN) development
 
 test:
 	@go test -v ./...

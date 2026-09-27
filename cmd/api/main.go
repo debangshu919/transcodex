@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	mw "github.com/debangshu919/transcodex/internal/api/middlewares"
@@ -17,7 +18,18 @@ import (
 )
 
 func main() {
-	cfg := config.MustLoad()
+	var env string
+
+	if len(os.Args) < 2 {
+		log.Fatal("Environment not specified! Defaulting to development")
+		env = "development"
+	} else if os.Args[1] != "production" {
+		env = "development"
+	} else {
+		env = "production"
+	}
+
+	cfg := config.MustLoad(env)
 	logger := logger.NewLogger(cfg, "logs")
 
 	log.Println("Starting server in", "env", cfg.Env, "mode")
