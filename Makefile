@@ -2,13 +2,16 @@ BIN_DIR = bin
 API_BIN = $(BIN_DIR)/api
 API_SRC = cmd/api/main.go
 
-.PHONY: build run clean migrate-up migrate-down
+.PHONY: build run clean migrate-up migrate-down test
 
 build:
 	@go build -o $(API_BIN) $(API_SRC)
 
 run: build
 	@./$(API_BIN)
+
+test:
+	@go test -v ./...
 
 clean:
 	@rm -rf $(BIN_DIR)/
