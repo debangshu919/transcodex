@@ -16,7 +16,7 @@ func main() {
 		log.Fatal("usage: migrate <up|down> [steps]")
 	}
 
-	cfg := config.MustLoad()
+	cfg := config.MustLoad("development")
 
 	m, err := migrate.New(
 		"file://migrations",
